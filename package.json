@@ -1,0 +1,21 @@
+{
+  "name": "whatsapp-parser",
+  "version": "1.0.0",
+  "description": "Parse whatsapp text files",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "whatsapp",
+    "parse"
+  ],
+  "author": "ronen-e",
+  "license": "MIT",
+  "dependencies": {
+    "moment-timezone": "^0.5.11"
+  },
+  "devDependencies": {
+
+  }
+}
