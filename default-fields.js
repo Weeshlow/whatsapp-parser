@@ -1,11 +1,7 @@
 const defaultFields = [
 	{
 		name: 'date',
-		output: (rec) =>  rec.datepart
-	},
-	{
-		name: 'hour',
-		output: (rec) => rec.hourpart
+		output: (rec) => rec.date
 	},
 	{
 		name: 'author',

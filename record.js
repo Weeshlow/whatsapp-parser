@@ -1,7 +1,7 @@
 const helpers = require('./helpers');
 const { 
 	defaultFields, authorPattern, recordPattern, 
-	format, outOfRange, getDate, n 
+	outOfRange, getDate, n 
 } = helpers; 
 
 /**
@@ -16,6 +16,7 @@ class Record {
 		this.date = null;
 		this.author = '';
 		this.content = '';
+		this.notification = false;
 		const matches = record.match(recordPattern);
 		this.parse(...matches);
 	}
@@ -34,40 +35,18 @@ class Record {
 	*/
 	parse(match, day, month, year, hour, minutes, content) {	
 		this.date = getDate(day, month, year, hour, minutes, this.zone);
-		this.datepart = [day, month, `20${year}`].join('/');
+		this.datepart = [day, month, year].join('/');
 		this.hourpart = [hour,minutes].join(':');
 		
 		this.content = content;
 		var authorMatch = this.content.match(authorPattern);
 		if (authorMatch) {
 			this.author = authorMatch[1];
-			this.content = this.content.substring(this.author.length+1);
+			this.content = this.content.substring(this.author.length+2);
 		}
-	}
-	
-	/**
-	* Get record different date parts as integers
-	* @return date parts {Object}
-	*/
-	getDateParts() {
-		var [day, month, year] = this.datepart.split('/').map(n);
-		var [hour, minutes] = this.hourpart.split(':').map(n);
-		return {day, month, year, hour, minutes};
-	}
-	
-	/**
-	* Set timezone
-	* @param zone - Time zone 
-	*/
-	setZone(zone) {
-		this.zone = zone;
-	}
-	/**
-	* Set timezone for all instances (on the prototype)
-	* @param zone - Time zone 
-	*/
-	static setZone(zone) {
-		this.prototype.zone = zone;
+		else {
+			this.notification = true;
+		}
 	}
 }
 

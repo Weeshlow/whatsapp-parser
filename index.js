@@ -6,17 +6,6 @@ const { linePattern, addRecord } = helpers;
 
 class Whatsapp {
 	/**
-	* Construct Whatsapp instance
-	* @param input {String} Path to input file
-	*/
-	constructor(input, {zone} = {}) {
-		this.input = input;
-		if (zone) {
-			Record.setZone(zone);
-		}
-	}
-	
-	/**
 	* Parse whatsapp text file to collection of whatsapp records
 	* 
 	* go line by line
@@ -25,8 +14,7 @@ class Whatsapp {
 	* @param filename {String} - The text file path
 	* @return promise {Promise} - resolved with records collectio
 	*/
-	parse() {
-		let filename = this.input;
+	parse(filename) {
 		let resolve, reject;
 		const promise = new Promise((_resolve, _reject) => {
 			resolve = _resolve;
@@ -75,8 +63,8 @@ class Whatsapp {
 /**
 * Parse file line by line and generate a records collection
 *
-* @param filename - The file path
-* @param callback - The function to call when done. 
+* @param filename {String} - path to file
+* @param callback {Function} - on complete callback. 
 * The callback is called with the records collection as an argument
 */
 function parseFile(filename, resolve) {

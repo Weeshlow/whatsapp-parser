@@ -3,15 +3,9 @@ const defaultFields = require('./default-fields');
 const linePattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d - .+)/;
 const authorPattern = /^([^:]+):/;
 const recordPattern = /^(\d\d)\/(\d\d)\/(\d\d), (\d\d):(\d\d) - ([\s\S]*)/;
-
-/**
-* Format a date string from by replacing day and month components
-* 
-* @param dateString {String} - The string to format
-* @return formatted string {String}
-*/
-function format(dateString) {
-	return dateString.replace(/(\d\d)\/(\d\d)\/\d\d/, '$2/$1/');
+const DATE_FORMAT = {
+	input: 'DD/MM/YY HH:mm',
+	output: 'MM-DD-YYYY HH:mm:ss'
 }
 
 /**
@@ -36,17 +30,17 @@ function outOfRange(param, min, max) {
 * @param minutes {String} - minutes
 * @return date {Date}
 */
-function getDate(day, month, year, hour, minutes, zone) {
-	var datestring = `${month}/${day}/${year} ${hour}:${minutes}:00`;
-	var format = 'MM/DD/YYYY HH:mm:ss'
+function getDate(day, month, year, hour, minutes) {
+	var datestring = `${day}/${month}/${year} ${hour}:${minutes}`;
+	var { input, output } = DATE_FORMAT;
 	// moment.tz(momentObject, zone).format();  // convert to time with zone offset
-	var date;
-	if (zone) {
-		date = moment.tz(datestring, format, zone).utc();
-	} else {
-		date = moment(datestring, format);
-	}
-	return date;
+	// var date;
+	// if (zone) {
+		// date = moment.tz(datestring, format, zone).utc();
+	// } else {
+		// date = moment(datestring, format);
+	// }
+	return moment(datestring, input).format(output);
 }
 
 /**
@@ -66,7 +60,6 @@ module.exports = {
 	linePattern,
 	authorPattern,
 	recordPattern,
-	format,
 	outOfRange,
 	getDate,
 	addRecord,
