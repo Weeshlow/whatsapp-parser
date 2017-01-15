@@ -2,11 +2,8 @@ const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
 const linePattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d - .+)/;
 const authorPattern = /^([^:]+):/;
-const recordPattern = /^(\d\d)\/(\d\d)\/(\d\d), (\d\d):(\d\d) - ([\s\S]*)/;
-const DATE_FORMAT = {
-	input: 'DD/MM/YY HH:mm',
-	output: 'MM-DD-YYYY HH:mm:ss'
-}
+// const recordPattern = /^(\d\d)\/(\d\d)\/(\d\d), (\d\d):(\d\d) - ([\s\S]*)/;
+const recordPattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]*)/;
 
 /**
 * checks if a number is outside a range
@@ -30,9 +27,14 @@ function outOfRange(param, min, max) {
 * @param minutes {String} - minutes
 * @return date {Date}
 */
-function getDate(day, month, year, hour, minutes) {
-	var datestring = `${day}/${month}/${year} ${hour}:${minutes}`;
-	var { input, output } = DATE_FORMAT;
+function getDate(datestring, day, month, year, hour, minutes) {
+	// const DATE_FORMAT = {
+		// input: 'DD/MM/YY HH:mm',
+		// output: 'MM-DD-YYYY HH:mm:ss'
+	// }
+
+	// var datestring = `${day}/${month}/${year} ${hour}:${minutes}`;
+	// var { input, output } = DATE_FORMAT;
 	// moment.tz(momentObject, zone).format();  // convert to time with zone offset
 	// var date;
 	// if (zone) {
@@ -40,17 +42,13 @@ function getDate(day, month, year, hour, minutes) {
 	// } else {
 		// date = moment(datestring, format);
 	// }
-	return moment(datestring, input).format(output);
+	// var input = 'DD/MM/YY, HH:mm';
+	// var output = 'MM-DD-YYYY HH:mm:ss';
+	// return formatDate(datestring, input, output);
 }
 
-/**
-* Add records to collection
-*
-*/
-function addRecord(records, Record, str) {
-	if (typeof str === 'string' && str.length > 0) {
-		records.push(new Record(str));
-	}
+function formatDate(datestring, inputFormat, outputFormat) {
+	return moment(datestring, inputFormat).format(outputFormat);
 }
 
 const n = (x) => parseInt(x);
@@ -61,7 +59,6 @@ module.exports = {
 	authorPattern,
 	recordPattern,
 	outOfRange,
-	getDate,
-	addRecord,
+	formatDate,
 	n
 };

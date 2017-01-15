@@ -5,6 +5,29 @@ const helpers = require('./helpers');
 const { linePattern, addRecord } = helpers;
 
 class Whatsapp {
+
+	constructor() {
+		this.format = {};
+		this.records = null;
+	}
+	
+	/**
+	* Set date formatting
+	* 
+	* @param input {String} - Input format
+	* @param output {String} - Output format
+	* @return this {Object}
+	*/
+	format(input, output) {
+		this.format.input = input;
+		this.format.output = output;
+		return this;
+	}
+	
+	timestamp() {
+		this.timestamp = true;
+	}
+	
 	/**
 	* Parse whatsapp text file to collection of whatsapp records
 	* 
@@ -15,25 +38,10 @@ class Whatsapp {
 	* @return promise {Promise} - resolved with records collectio
 	*/
 	parse(filename) {
-		let resolve, reject;
-		const promise = new Promise((_resolve, _reject) => {
-			resolve = _resolve;
-			reject  = _reject;
+		this.records = [];
+		return new Promise((resolve, reject) => {
+			this._parseFile(filename, resolve);
 		});
-		
-		fs.stat(filename, (err, stat) => {
-			if (err) {
-				reject(err);
-			}
-			else if (stat.isFile()) {
-				parseFile(filename, resolve);
-			} 
-			else {
-				reject(`Error: File ${filename} not found`); 
-			}
-		});
-		
-		return promise;
 	}
 	
 	/**
@@ -58,36 +66,65 @@ class Whatsapp {
 			});
 		});
 	}
+	
+	/**
+	* Parse file line by line and generate a records collection
+	*
+	* @param filename {String} - path to file
+	* @param callback {Function} - on complete callback. 
+	* The callback is called with the records collection as an argument
+	*/	
+	_parseFile(filename, resolve) {
+		var {records} = this;
+		var string;
+		//var add = addRecord.bind(null, records, Record);
+		
+		const rl = readline.createInterface({
+		  input: fs.createReadStream(filename, 'utf8')
+		});
+		rl.on('line', (line) => {;
+			//console.log('line', line);
+			if (linePattern.test(line)) {
+				this._addRecord(string);
+				string = line;
+			}
+			else {
+				string += '\n' + line;
+			}
+		}).on('close', () => {
+			this._addRecord(string);
+			resolve(records);
+		});
+	}
+
+	_transform(str) {
+		let record = new Record(str);
+		var {input, output } = this.format;
+		if (input && output) {
+			record = record.formatDate(f.input, f.output);
+		}
+		if (this.timestamp === true) {
+			record.date = record.time(output);
+		}
+		return record;
+	}
+	
+	_addRecord(str) {
+		var {records} = this;
+		let record = null;
+		if (typeof str === 'string' && str.length > 0) {
+			record = this._transform(str);
+		}
+		if (record !== null) {
+			records.push(record);
+		}
+		return records;
+	}
 }
 
-/**
-* Parse file line by line and generate a records collection
-*
-* @param filename {String} - path to file
-* @param callback {Function} - on complete callback. 
-* The callback is called with the records collection as an argument
-*/
-function parseFile(filename, resolve) {
-	var records = [];
-	var string;
-	var add = addRecord.bind(null, records, Record);
-	
-	const rl = readline.createInterface({
-	  input: fs.createReadStream(filename, 'utf8')
-	});
-	rl.on('line', (line) => {;
-		//console.log('line', line);
-		if (linePattern.test(line)) {
-			add(string);
-			string = line;
-		}
-		else {
-			string += '\n' + line;
-		}
-	}).on('close', () => {
-		add(string);
-		resolve(records);
-	});
-}
+
+
+
+
 
 module.exports = Whatsapp;
