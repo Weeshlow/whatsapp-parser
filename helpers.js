@@ -1,9 +1,9 @@
+const Readable = require('stream').Readable;
 const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
 const linePattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d - .+)/;
 const authorPattern = /^([^:]+):/;
-// const recordPattern = /^(\d\d)\/(\d\d)\/(\d\d), (\d\d):(\d\d) - ([\s\S]*)/;
-const recordPattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]*)/;
+const recordPattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]+)/;
 
 /**
 * checks if a number is outside a range
@@ -27,13 +27,12 @@ function outOfRange(param, min, max) {
 * @param minutes {String} - minutes
 * @return date {Date}
 */
-function getDate(datestring, day, month, year, hour, minutes) {
+// function getDate(datestring) {
 	// const DATE_FORMAT = {
 		// input: 'DD/MM/YY HH:mm',
 		// output: 'MM-DD-YYYY HH:mm:ss'
 	// }
 
-	// var datestring = `${day}/${month}/${year} ${hour}:${minutes}`;
 	// var { input, output } = DATE_FORMAT;
 	// moment.tz(momentObject, zone).format();  // convert to time with zone offset
 	// var date;
@@ -45,13 +44,23 @@ function getDate(datestring, day, month, year, hour, minutes) {
 	// var input = 'DD/MM/YY, HH:mm';
 	// var output = 'MM-DD-YYYY HH:mm:ss';
 	// return formatDate(datestring, input, output);
-}
-
-function formatDate(datestring, inputFormat, outputFormat) {
-	return moment(datestring, inputFormat).format(outputFormat);
-}
+// }
 
 const n = (x) => parseInt(x);
+
+/**
+* Convert string to readable stream
+* 
+* @param string {String} - The String to convert
+* @return readable stream
+*/
+function streamify(string) {
+	var s = new Readable();
+	s._read = () => {};
+	s.push(string);
+	s.push(null);
+	return s;
+}
 
 module.exports = {
 	defaultFields,
@@ -59,6 +68,6 @@ module.exports = {
 	authorPattern,
 	recordPattern,
 	outOfRange,
-	formatDate,
+	streamify,
 	n
 };
