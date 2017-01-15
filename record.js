@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 const helpers = require('./helpers');
 const { 
 	defaultFields, authorPattern, recordPattern, 
@@ -16,7 +17,6 @@ class Record {
 		this.date = null;
 		this.author = '';
 		this.content = '';
-		this.notification = false;
 		const matches = record.match(recordPattern);
 		this.parse(...matches);
 	}
@@ -33,20 +33,23 @@ class Record {
 	/**
 	* Parse record as string to Record object.
 	*/
-	parse(match, day, month, year, hour, minutes, content) {	
-		this.date = getDate(day, month, year, hour, minutes, this.zone);
-		this.datepart = [day, month, year].join('/');
-		this.hourpart = [hour,minutes].join(':');
-		
-		this.content = content;
-		var authorMatch = this.content.match(authorPattern);
+	parse(match, datestring, content) {
+		this.date = datestring;
+		var authorMatch = content.match(authorPattern);
 		if (authorMatch) {
 			this.author = authorMatch[1];
-			this.content = this.content.substring(this.author.length+2);
+			content = content.substring(this.author.length+2);
 		}
-		else {
-			this.notification = true;
-		}
+		this.content = content;
+	}
+	
+	formatDate(inputFormat, outputFormat) {
+		this.date = formatDate(this.date, input, output);
+		return this;
+	}
+	
+	time(format) {
+		return moment(this.date, format);
 	}
 }
 
