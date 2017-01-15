@@ -1,13 +1,13 @@
 const fs = require('fs');
-const readline = require('readline');
+const lineParser = require('./line-parser');
 const Record = require('./record');
 const helpers = require('./helpers');
-const { linePattern, addRecord } = helpers;
+const { linePattern, streamify } = helpers;
 
 class Whatsapp {
 
 	constructor() {
-		this.format = {};
+		this._format = {};
 		this.records = null;
 	}
 	
@@ -19,31 +19,36 @@ class Whatsapp {
 	* @return this {Object}
 	*/
 	format(input, output) {
-		this.format.input = input;
-		this.format.output = output;
+		this._format.input = input;
+		this._format.output = output;
 		return this;
 	}
 	
 	timestamp() {
-		this.timestamp = true;
+		this._timestamp = true;
+		return this;
+	}
+	
+	/**
+	* Parse String or String array to a collection of whatsapp records
+	* 
+	* @param stringOrArray {String/Array} - Text or array of records to parse
+	* @return promise {Promise} - resolved with records collection
+	*/	
+	parse(stringOrArray) {
+		return this._parse(this._getReadable(stringOrArray))
 	}
 	
 	/**
 	* Parse whatsapp text file to collection of whatsapp records
-	* 
-	* go line by line
-	* if does not start with a record pattern add to existing record
-	* if starts with record pattern - save existing record and start a new record
-	* @param filename {String} - The text file path
-	* @return promise {Promise} - resolved with records collectio
+	*
+	* @param filename {String} - Path to file
+	* @return promise {Promise} - resolved with records collection
 	*/
-	parse(filename) {
-		this.records = [];
-		return new Promise((resolve, reject) => {
-			this._parseFile(filename, resolve);
-		});
+	parseFile(filename) {
+		return this._parse(this._getReadable(filename, true));
 	}
-	
+
 	/**
 	* Write records as comma separated values file
 	*
@@ -65,46 +70,63 @@ class Whatsapp {
 				else resolve(data);
 			});
 		});
+	}	
+	
+	/**
+	* Parse readable stream to a collection of whatsapp records
+	*
+	* go line by line
+	* if does not start with a record pattern add to existing record
+	* if starts with record pattern - save existing record and start a new record
+	* @param inputStream {Stream} - Readable stream
+	* @return promise {Promise} - resolved with records collection
+	*/
+	_parse(inputStream) {
+		var records = this.records = [];
+		return new Promise((resolve, reject) => {
+			var string;
+			var onLine = (line) => {
+				if (linePattern.test(line)) {
+					this._addRecord(string);
+					string = line;
+				}
+				else {
+					string += '\n' + line;
+				}
+			}
+			var onClose = () => {
+				this._addRecord(string);
+				resolve(records);
+			}
+
+			lineParser(inputStream, onLine, onClose);
+		});
 	}
 	
 	/**
-	* Parse file line by line and generate a records collection
+	* Get Readable stream from input value
+	* The value can be a path to a file, string, array of strings.
 	*
-	* @param filename {String} - path to file
-	* @param callback {Function} - on complete callback. 
-	* The callback is called with the records collection as an argument
-	*/	
-	_parseFile(filename, resolve) {
-		var {records} = this;
-		var string;
-		//var add = addRecord.bind(null, records, Record);
-		
-		const rl = readline.createInterface({
-		  input: fs.createReadStream(filename, 'utf8')
-		});
-		rl.on('line', (line) => {;
-			//console.log('line', line);
-			if (linePattern.test(line)) {
-				this._addRecord(string);
-				string = line;
-			}
-			else {
-				string += '\n' + line;
-			}
-		}).on('close', () => {
-			this._addRecord(string);
-			resolve(records);
-		});
+	* @param value {mixed} - value to create Readable stream from.
+	* @param isFile {Boolean} - true to indicate value is a path
+	* @return readable stream {Stream}
+	*/
+	_getReadable(value, isFile=false) {
+		switch(true) {
+			case (isFile): return fs.createReadStream(value, 'utf8');
+			case (typeof value === 'string'): return streamify(value);
+			case (Array.isArray(value)): return this.getReadable(value.join('\n'));
+		}
 	}
 
 	_transform(str) {
 		let record = new Record(str);
-		var {input, output } = this.format;
+		var {input, output } = this._format;
 		if (input && output) {
-			record = record.formatDate(f.input, f.output);
+			record = record.formatDate(input, output);
 		}
-		if (this.timestamp === true) {
-			record.date = record.time(output);
+		if (this._timestamp === true && (output || input)) {
+			record.date = record.time((output || input));
 		}
 		return record;
 	}
@@ -121,10 +143,5 @@ class Whatsapp {
 		return records;
 	}
 }
-
-
-
-
-
 
 module.exports = Whatsapp;
