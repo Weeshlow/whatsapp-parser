@@ -44,7 +44,7 @@ class Record {
 	}
 	
 	formatDate(inputFormat, outputFormat) {
-		this.date = formatDate(this.date, input, output);
+		this.date = moment(this.date, inputFormat).format(outputFormat)
 		return this;
 	}
 	
