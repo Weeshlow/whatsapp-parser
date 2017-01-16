@@ -8,6 +8,7 @@ class Whatsapp {
 
 	constructor() {
 		this._format = {};
+		this._multiline = false;
 		this.records = null;
 	}
 	
@@ -24,8 +25,23 @@ class Whatsapp {
 		return this;
 	}
 	
-	timestamp() {
-		this._timestamp = true;
+	/**
+	* Set date property as Date object (or Date object wrapper) on record
+	* @param value {Boolean} true if record date should be an object, false otherwise
+	* @return this instance {Object}
+	*/
+	timestamp(value=true) {
+		this._timestamp = value;
+		return this;
+	}
+	
+	/**
+	* Set single or multi line mode
+	* @param value {Boolean} true if multi-line mode or false otherwise
+	* @return this instance {Object}
+	*/
+	multiline(value=true) {
+		this._multiline = value;
 		return this;
 	}
 	
@@ -84,18 +100,26 @@ class Whatsapp {
 	_parse(inputStream) {
 		var records = this.records = [];
 		return new Promise((resolve, reject) => {
-			var string;
+			var string = '';
 			var onLine = (line) => {
-				if (linePattern.test(line)) {
-					this._addRecord(string);
-					string = line;
+				var match = linePattern.test(line);
+				if (this._multiline) {
+					if (match) {
+						this._addRecord(string);
+						string = line;
+					}
+					else {
+						string += '\n' + line;
+					}
 				}
-				else {
-					string += '\n' + line;
+				else if (match) {
+					this._addRecord(line);
 				}
 			}
 			var onClose = () => {
-				this._addRecord(string);
+				if (this._multiline) {
+					this._addRecord(string);
+				}
 				resolve(records);
 			}
 
@@ -134,7 +158,7 @@ class Whatsapp {
 	_addRecord(str) {
 		var {records} = this;
 		let record = null;
-		if (typeof str === 'string' && str.length > 0) {
+		if (str.length > 0) {
 			record = this._transform(str);
 		}
 		if (record !== null) {
