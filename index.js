@@ -2,7 +2,7 @@ const fs = require('fs');
 const lineParser = require('./line-parser');
 const Record = require('./record');
 const helpers = require('./helpers');
-const { linePattern, streamify } = helpers;
+const { linePattern, streamify, getReadable } = helpers;
 
 class Whatsapp {
 
@@ -52,7 +52,7 @@ class Whatsapp {
 	* @return promise {Promise} - resolved with records collection
 	*/	
 	parse(stringOrArray) {
-		return this._parse(this._getReadable(stringOrArray))
+		return this._parse(getReadable(stringOrArray))
 	}
 	
 	/**
@@ -62,7 +62,7 @@ class Whatsapp {
 	* @return promise {Promise} - resolved with records collection
 	*/
 	parseFile(filename) {
-		return this._parse(this._getReadable(filename, true));
+		return this._parse(getReadable(filename, true));
 	}
 
 	/**
@@ -98,14 +98,14 @@ class Whatsapp {
 	* @return promise {Promise} - resolved with records collection
 	*/
 	_parse(inputStream) {
-		var records = this.records = [];
+		var records = [];
 		return new Promise((resolve, reject) => {
 			var string = '';
 			var onLine = (line) => {
 				var match = linePattern.test(line);
 				if (this._multiline) {
 					if (match) {
-						this._addRecord(string);
+						this._addRecord(string, records);
 						string = line;
 					}
 					else {
@@ -113,12 +113,12 @@ class Whatsapp {
 					}
 				}
 				else if (match) {
-					this._addRecord(line);
+					this._addRecord(line, records);
 				}
 			}
 			var onClose = () => {
 				if (this._multiline) {
-					this._addRecord(string);
+					this._addRecord(string, records);
 				}
 				resolve(records);
 			}
@@ -127,22 +127,7 @@ class Whatsapp {
 		});
 	}
 	
-	/**
-	* Get Readable stream from input value
-	* The value can be a path to a file, string, array of strings.
-	*
-	* @param value {mixed} - value to create Readable stream from.
-	* @param isFile {Boolean} - true to indicate value is a path
-	* @return readable stream {Stream}
-	*/
-	_getReadable(value, isFile=false) {
-		switch(true) {
-			case (isFile): return fs.createReadStream(value, 'utf8');
-			case (typeof value === 'string'): return streamify(value);
-			case (Array.isArray(value)): return this.getReadable(value.join('\n'));
-		}
-	}
-
+	// create record and apply transformations before returning it.
 	_transform(str) {
 		let record = new Record(str);
 		var {input, output } = this._format;
@@ -155,8 +140,8 @@ class Whatsapp {
 		return record;
 	}
 	
-	_addRecord(str) {
-		var {records} = this;
+	// add record to list. return list
+	_addRecord(str, records) {
 		let record = null;
 		if (str.length > 0) {
 			record = this._transform(str);

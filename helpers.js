@@ -1,3 +1,4 @@
+const fs = require('fs');
 const Readable = require('stream').Readable;
 const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
@@ -62,6 +63,22 @@ function streamify(string) {
 	return s;
 }
 
+/**
+* Get Readable stream from input value
+* The value can be a path to a file, string, array of strings.
+*
+* @param value {mixed} - value to create Readable stream from.
+* @param isFile {Boolean} - true to indicate value is a path
+* @return readable stream {Stream}
+*/
+function getReadable(value, isFile=false) {
+	switch(true) {
+		case (isFile): return fs.createReadStream(value, 'utf8');
+		case (typeof value === 'string'): return streamify(value);
+		case (Array.isArray(value)): return getReadable(value.join('\n'));
+	}
+}
+
 module.exports = {
 	defaultFields,
 	linePattern,
@@ -69,5 +86,6 @@ module.exports = {
 	recordPattern,
 	outOfRange,
 	streamify,
+	getReadable,
 	n
 };
