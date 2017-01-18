@@ -2,6 +2,8 @@ const fs = require('fs');
 const Readable = require('stream').Readable;
 const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
+const matchPattern = require('./patterns');
+
 const linePattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d - .+)/;
 const authorPattern = /^([^:]+):/;
 const recordPattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]+)/;
@@ -87,5 +89,6 @@ module.exports = {
 	outOfRange,
 	streamify,
 	getReadable,
+	matchPattern,
 	n
 };

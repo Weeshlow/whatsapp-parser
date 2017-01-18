@@ -2,14 +2,27 @@ const fs = require('fs');
 const lineParser = require('./line-parser');
 const Record = require('./record');
 const helpers = require('./helpers');
-const { linePattern, streamify, getReadable } = helpers;
+const { streamify, getReadable, matchPattern } = helpers;
 
 class Whatsapp {
 
 	constructor() {
+		this._pattern = null;
 		this._format = {};
 		this._multiline = false;
-		this.records = null;
+	}
+
+	/**
+	* Set regular expression pattern to match with records
+	*
+	* @param regexp {RegExp} - Regular expression.
+	* @return this {Object}
+	*/
+	pattern(regexp=null) {
+		if (regexp instanceof RegExp) {
+			this._pattern = regexp;
+		}
+		return this;
 	}
 	
 	/**
@@ -99,10 +112,19 @@ class Whatsapp {
 	*/
 	_parse(inputStream) {
 		var records = [];
+
 		return new Promise((resolve, reject) => {
+			var pattern = this._pattern;
 			var string = '';
 			var onLine = (line) => {
-				var match = linePattern.test(line);
+				if (pattern === null) {
+					pattern = this._guessPattern(line);
+					if (pattern === null) {
+						reject('Could not parse - record pattern not found');
+						return rl.close();
+					}
+				}
+				var match = pattern.test(line);
 				if (this._multiline) {
 					if (match) {
 						this._addRecord(string, records);
@@ -123,7 +145,7 @@ class Whatsapp {
 				resolve(records);
 			}
 
-			lineParser(inputStream, onLine, onClose);
+			var rl = lineParser(inputStream, onLine, onClose);
 		});
 	}
 	
@@ -150,6 +172,11 @@ class Whatsapp {
 			records.push(record);
 		}
 		return records;
+	}
+
+	// guess the file record pattern using input line
+	_guessPattern(line) {
+		return matchPattern(line);
 	}
 }
 
