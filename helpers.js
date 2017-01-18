@@ -20,35 +20,6 @@ function outOfRange(param, min, max) {
 	return param > max || param < min;
 }
 
-/**
-* Get Date object from string paramters
-* 
-* @param day {String} - day
-* @param month {String} - month
-* @param year {String} - year
-* @param hour {String} - hour
-* @param minutes {String} - minutes
-* @return date {Date}
-*/
-// function getDate(datestring) {
-	// const DATE_FORMAT = {
-		// input: 'DD/MM/YY HH:mm',
-		// output: 'MM-DD-YYYY HH:mm:ss'
-	// }
-
-	// var { input, output } = DATE_FORMAT;
-	// moment.tz(momentObject, zone).format();  // convert to time with zone offset
-	// var date;
-	// if (zone) {
-		// date = moment.tz(datestring, format, zone).utc();
-	// } else {
-		// date = moment(datestring, format);
-	// }
-	// var input = 'DD/MM/YY, HH:mm';
-	// var output = 'MM-DD-YYYY HH:mm:ss';
-	// return formatDate(datestring, input, output);
-// }
-
 const n = (x) => parseInt(x);
 
 /**
