@@ -7,7 +7,7 @@ const Patterns = [
 ];
 
 module.exports = function match(text) {
-	for (let i = 0; i < Patterns.length; i++) {
+  for (let i = 0; i < Patterns.length; i++) {
     if (Patterns[i].test(text)) {
       return Patterns[i];
     }

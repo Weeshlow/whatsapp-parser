@@ -1,7 +1,7 @@
 const moment = require('moment-timezone');
 const helpers = require('./helpers');
 const { 
-	defaultFields, authorPattern, recordPattern, 
+	defaultFields, authorPattern, 
 	outOfRange, n 
 } = helpers; 
 
@@ -11,13 +11,14 @@ const {
 class Record {
 	/**
 	* Constructor for Record instances
-	* @param record {String} - The whatsapp record to parse
+	* @param record {String} - The string to parse
+	* @param pattern {RegExp} - regular expression to match against 
 	*/
-	constructor(record) {	
+	constructor(record, pattern) {	
 		this.date = null;
 		this.author = '';
 		this.content = '';
-		const matches = record.match(recordPattern);
+		const matches = record.match(pattern);
 		this.parse(...matches);
 	}
 

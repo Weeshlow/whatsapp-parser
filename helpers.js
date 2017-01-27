@@ -3,10 +3,7 @@ const Readable = require('stream').Readable;
 const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
 const matchPattern = require('./patterns');
-
-const linePattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d - .+)/;
 const authorPattern = /^([^:]+):/;
-const recordPattern = /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]+)/;
 
 /**
 * checks if a number is outside a range
@@ -54,9 +51,7 @@ function getReadable(value, isFile=false) {
 
 module.exports = {
 	defaultFields,
-	linePattern,
 	authorPattern,
-	recordPattern,
 	outOfRange,
 	streamify,
 	getReadable,

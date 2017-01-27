@@ -112,14 +112,14 @@ class Whatsapp {
 	*/
 	_parse(inputStream) {
 		var records = [];
+		var pattern = this._pattern;
+		var string = '';
 
 		return new Promise((resolve, reject) => {
-			var pattern = this._pattern;
-			var string = '';
 			var onLine = (line) => {
-				if (pattern === null) {
+				if (!pattern) {
 					pattern = this._guessPattern(line);
-					if (pattern === null) {
+					if (!pattern) {
 						reject('Could not parse - record pattern not found');
 						return rl.close();
 					}
@@ -151,7 +151,7 @@ class Whatsapp {
 	
 	// create record and apply transformations before returning it.
 	_transform(str) {
-		let record = new Record(str);
+		let record = new Record(str, this._pattern);
 		var {input, output } = this._format;
 		if (input && output) {
 			record = record.formatDate(input, output);
@@ -176,7 +176,11 @@ class Whatsapp {
 
 	// guess the file record pattern using input line
 	_guessPattern(line) {
-		return matchPattern(line);
+		var pattern = matchPattern(line);
+		if (pattern) {
+			this.pattern(pattern);
+		}
+		return pattern;
 	}
 }
 
