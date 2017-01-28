@@ -11,6 +11,7 @@ class Whatsapp {
 		this._format = {};
 		this._multiline = false;
 		this._transforms = [];
+		this._timezone = '';
 	}
 
 	/**
@@ -46,6 +47,16 @@ class Whatsapp {
 	*/
 	timestamp(value=true) {
 		this._timestamp = value;
+		return this;
+	}
+	
+	/**
+	* Set timezone. This value is used when parsing record's datestring to date object
+	* @param zone {String} 
+	* @return this instance {Object}
+	*/
+	timezone(zone) {
+		this._timezone = zone;
 		return this;
 	}
 	
@@ -111,7 +122,6 @@ class Whatsapp {
 	toCSV(records, filename, encoding='utf8') {
 		var headers = Record.defaultFields.map(item => item.name);
 		var outputs = Record.defaultFields.map(item => item.output);
-		
 		var data = records.map((rec) => rec.toCSV(outputs));
 		data.unshift(headers.join(','));
 		data = data.join('\n');
@@ -178,11 +188,12 @@ class Whatsapp {
 	// create record and apply transformations before returning it.
 	_transform(record) {
 		var {input, output } = this._format;
+		var dateFormat = output || input;
 		if (input && output) {
 			record = record.formatDate(input, output);
 		}
-		if (this._timestamp === true && (output || input)) {
-			record.date = record.time((output || input));
+		if (this._timestamp === true && dateFormat) {
+			record.timestamp = record.time(dateFormat, this._timezone);
 		}
 		for (let transform of this._transforms) {
 			record = transform(record);

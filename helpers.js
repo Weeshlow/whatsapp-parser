@@ -1,6 +1,5 @@
 const fs = require('fs');
 const Readable = require('stream').Readable;
-const moment = require('moment-timezone');
 const defaultFields = require('./default-fields');
 const matchPattern = require('./patterns');
 const {authorPattern} = matchPattern;
