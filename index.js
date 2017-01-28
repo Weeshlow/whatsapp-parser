@@ -2,7 +2,7 @@ const fs = require('fs');
 const lineParser = require('./line-parser');
 const Record = require('./record');
 const helpers = require('./helpers');
-const { getReadable, matchPattern } = helpers;
+const { getReadable, matchPattern, defaultFields } = helpers;
 
 class Whatsapp {
 
@@ -119,19 +119,23 @@ class Whatsapp {
 	* @param encoding {String} - encoding to use when writing to file
 	* @return promise {Promise} - resolved when file is written or rejected on error
 	*/	
-	toCSV(records, filename, encoding='utf8') {
-		var headers = Record.defaultFields.map(item => item.name);
-		var outputs = Record.defaultFields.map(item => item.output);
+	toCSV(records, filename, {encoding='utf8', fields=defaultFields} = {}) {
+		var headers = [], outputs = [];
+		for (let field of fields) {
+			headers.push(field.name);
+			outputs.push(field.output);
+		}
 		var data = records.map((rec) => rec.toCSV(outputs));
 		data.unshift(headers.join(','));
 		data = data.join('\n');
+
 		return new Promise((resolve, reject) => {
 			fs.writeFile(filename, data, encoding, (err) => {
 				if (err) reject(err);
 				else resolve(data);
 			});
 		});
-	}	
+	}
 	
 	/**
 	* Parse readable stream to a collection of whatsapp records

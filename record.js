@@ -1,9 +1,6 @@
 const moment = require('moment-timezone');
 const helpers = require('./helpers');
-const { 
-	defaultFields, authorPattern, 
-	outOfRange, toInteger 
-} = helpers; 
+const { authorPattern } = helpers; 
 
 /**
 * Record class describes a Whatsapp record
@@ -63,17 +60,15 @@ class Record {
 	* @return date {Object}
 	*/
 	time(format, timezone='') {
-		var timestamp;
+		var date;
 		if (timezone) {
-			timestamp = moment.tz(this.date, format, timezone).utc().valueOf();
+			date = moment.tz(this.date, format, timezone);
 		}
 		else {
-			timestamp = moment(this.date, format).utc().valueOf();
+			date = moment(this.date, format);
 		}
-		return timestamp;
+		return date.utc().valueOf();
 	}
 }
-
-Record.defaultFields = defaultFields;
 
 module.exports = Record;
