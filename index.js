@@ -2,7 +2,7 @@ const fs = require('fs');
 const lineParser = require('./line-parser');
 const Record = require('./record');
 const helpers = require('./helpers');
-const { streamify, getReadable, matchPattern } = helpers;
+const { getReadable, matchPattern } = helpers;
 
 class Whatsapp {
 
@@ -10,6 +10,7 @@ class Whatsapp {
 		this._pattern = null;
 		this._format = {};
 		this._multiline = false;
+		this._transforms = [];
 	}
 
 	/**
@@ -55,6 +56,27 @@ class Whatsapp {
 	*/
 	multiline(value=true) {
 		this._multiline = value;
+		return this;
+	}
+
+	/**
+	* Set single line mode
+	* Shortcut for using multiline(false)
+	* @return this instance {Object}
+	*/
+	singleline() {
+		this.multiline(false);
+		return this;
+	}
+	
+	/**
+	* Add record transformation.
+	* A transform is a function which accepts a record as a single argument and returns it.
+	* @param fn the transformation to apply to the record
+	* @return this instance {Object}
+	*/	
+	transform(fn) {
+		this._transforms.push(fn);
 		return this;
 	}
 	
@@ -114,6 +136,22 @@ class Whatsapp {
 		var records = [];
 		var pattern = this._pattern;
 		var string = '';
+		
+		const multiLine = (isMatch, line) => {
+			if (isMatch) {
+				this._addRecord(string, records);
+				string = line;
+			}
+			else {
+				string += '\n' + line;
+			}
+		}
+		const singleLine = (isMatch, line) => {
+			if (isMatch) {
+				this._addRecord(line, records);
+			}
+		}
+		let parse = this._multiline ? multiLine : singleLine;
 
 		return new Promise((resolve, reject) => {
 			var onLine = (line) => {
@@ -124,19 +162,7 @@ class Whatsapp {
 						return rl.close();
 					}
 				}
-				var match = pattern.test(line);
-				if (this._multiline) {
-					if (match) {
-						this._addRecord(string, records);
-						string = line;
-					}
-					else {
-						string += '\n' + line;
-					}
-				}
-				else if (match) {
-					this._addRecord(line, records);
-				}
+				parse(pattern.test(line), line);
 			}
 			var onClose = () => {
 				if (this._multiline) {
@@ -150,14 +176,16 @@ class Whatsapp {
 	}
 	
 	// create record and apply transformations before returning it.
-	_transform(str) {
-		let record = new Record(str, this._pattern);
+	_transform(record) {
 		var {input, output } = this._format;
 		if (input && output) {
 			record = record.formatDate(input, output);
 		}
 		if (this._timestamp === true && (output || input)) {
 			record.date = record.time((output || input));
+		}
+		for (let transform of this._transforms) {
+			record = transform(record);
 		}
 		return record;
 	}
@@ -166,10 +194,10 @@ class Whatsapp {
 	_addRecord(str, records) {
 		let record = null;
 		if (str.length > 0) {
-			record = this._transform(str);
+			record = new Record(str, this._pattern);
 		}
 		if (record !== null) {
-			records.push(record);
+			records.push(this._transform(record));
 		}
 		return records;
 	}

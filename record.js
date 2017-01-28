@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const helpers = require('./helpers');
 const { 
 	defaultFields, authorPattern, 
-	outOfRange, n 
+	outOfRange, toInteger 
 } = helpers; 
 
 /**
