@@ -6,12 +6,19 @@ const Patterns = [
   /^(\d\d-\d\d-\d\d \d\d:\d\d:\d\d): ([\s\S]+)/
 ];
 
-module.exports = function match(text) {
-  for (let i = 0; i < Patterns.length; i++) {
-    if (Patterns[i].test(text)) {
-      return Patterns[i];
+/**
+* Match text to pattern
+* 
+* @param text {String} - text to match with pattern.
+* @return pattern {RegExp|null}
+*/
+function match(text) {
+  for (let pattern of Patterns) {
+    if (pattern.test(text)) {
+      return pattern;
     }
   }
   return null;
 }
+module.exports = match;
 module.exports.authorPattern = authorPattern;

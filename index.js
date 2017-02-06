@@ -4,8 +4,14 @@ const Record = require('./record');
 const helpers = require('./helpers');
 const { getReadable, matchPattern, defaultFields } = helpers;
 
+/**
+* class Whatsapp describes a Whatsapp parser instance
+*/
 class Whatsapp {
 
+	/**
+	* Constructor for Whatsapp instance
+	*/
 	constructor() {
 		this._pattern = null;
 		this._format = {};
@@ -141,15 +147,16 @@ class Whatsapp {
 	* Parse readable stream to a collection of whatsapp records
 	*
 	* go line by line
-	* if does not start with a record pattern add to existing record
-	* if starts with record pattern - save existing record and start a new record
+	* if line does not start with a record pattern - add to existing record
+	* if line starts with record pattern - save existing record and start a new record
+	* @private
 	* @param inputStream {Stream} - Readable stream
 	* @return promise {Promise} - resolved with records collection
 	*/
 	_parse(inputStream) {
 		var records = [];
-		var pattern = this._pattern;
 		var string = '';
+		var {_multiline, _pattern} = this;
 		
 		const multiLine = (isMatch, line) => {
 			if (isMatch) {
@@ -165,21 +172,21 @@ class Whatsapp {
 				this._addRecord(line, records);
 			}
 		}
-		let parse = this._multiline ? multiLine : singleLine;
+		let parse = _multiline ? multiLine : singleLine;
 
 		return new Promise((resolve, reject) => {
 			var onLine = (line) => {
-				if (!pattern) {
-					pattern = this._guessPattern(line);
-					if (!pattern) {
+				if (!_pattern) {
+					_pattern = this._guessPattern(line);
+					if (!_pattern) {
 						reject('Could not parse - record pattern not found');
 						return rl.close();
 					}
 				}
-				parse(pattern.test(line), line);
+				parse(_pattern.test(line), line);
 			}
 			var onClose = () => {
-				if (this._multiline) {
+				if (_multiline) {
 					this._addRecord(string, records);
 				}
 				resolve(records);
@@ -189,13 +196,20 @@ class Whatsapp {
 		});
 	}
 	
-	// create record and apply transformations before returning it.
+	/**
+	* Transform record
+	*
+	* @private
+	* @param record {Record}
+	* @return record {Record}
+	*/
 	_transform(record) {
 		var {input, output } = this._format;
 		var dateFormat = output || input;
 		if (input && output) {
 			record = record.formatDate(input, output);
 		}
+
 		if (this._timestamp === true && dateFormat) {
 			record.timestamp = record.time(dateFormat, this._timezone);
 		}
@@ -205,19 +219,27 @@ class Whatsapp {
 		return record;
 	}
 	
-	// add record to list. return list
-	_addRecord(str, records) {
-		let record = null;
-		if (str.length > 0) {
-			record = new Record(str, this._pattern);
-		}
-		if (record !== null) {
-			records.push(this._transform(record));
-		}
+	/**
+	* Add record
+	*
+	* @private
+	* @param text {String} - record text
+	* @param records {Array} - Records collection
+	* @return records {Array}
+	*/
+	_addRecord(text, records) {
+		let record = new Record(text, this._pattern);
+		records.push(this._transform(record));
 		return records;
 	}
 
-	// guess the file record pattern using input line
+	/**
+	* Guess record pattern
+	*
+	* @private
+	* @param line {String}
+	* @return pattern {RegExp|null}
+	*/
 	_guessPattern(line) {
 		var pattern = matchPattern(line);
 		if (pattern) {

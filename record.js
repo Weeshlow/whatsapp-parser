@@ -6,6 +6,7 @@ const { authorPattern } = helpers;
 * Record class describes a Whatsapp record
 */
 class Record {
+	
 	/**
 	* Constructor for Record instances
 	* @param record {String} - The string to parse
@@ -15,21 +16,24 @@ class Record {
 		this.date = null;
 		this.author = '';
 		this.content = '';
-		const matches = record.match(pattern);
-		this.parse(...matches);
+		this.parse(...record.match(pattern));
 	}
 
 	/**
 	* Return record in csv format
-	* @param outputs {Array} - Array of functions. each function is a filed
-	* @return data {Array} - String Array of 
+	* @param outputs {Array} - Array of functions (each function is a field).
+	* @return data {Array} - Array of fields
 	*/
 	toCSV(outputs) {
 		return outputs.map(output => output(this));
 	}
 
 	/**
-	* Parse record as string to Record object.
+	* Parse record as string to Record object. 
+	* This method will try to extract author from content.
+	* @param match {String} full match of the string and pattern provided in the constructor function
+	* @param datestring {String} Record date
+	* @param content {String} Record content
 	*/
 	parse(match, datestring, content) {
 		this.date = datestring;
@@ -45,19 +49,19 @@ class Record {
 	* Format date string.
 	* @param inputFormat {String} input format
 	* @param outputFormat {String} output format
-	* @return formatted date string
+	* @return this {Record}
 	*/	
 	formatDate(inputFormat, outputFormat) {
-		this.date = moment(this.date, inputFormat).format(outputFormat)
+		this.date = moment(this.date, inputFormat).format(outputFormat);
 		return this;
 	}
 	
 	/**
-	* Convert datestring to date object.
+	* Convert datestring to timestamp.
 	* Accepts an optional timezone argument
 	* @param format {String} time format of datestring
 	* @param timezone {String} time zone
-	* @return date {Object}
+	* @return timestamp {Number}
 	*/
 	time(format, timezone='') {
 		var date;
@@ -67,7 +71,7 @@ class Record {
 		else {
 			date = moment(this.date, format);
 		}
-		return date.utc().valueOf();
+		return date.valueOf();
 	}
 }
 

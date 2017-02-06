@@ -5,7 +5,7 @@ function lineParser(inputStream, onLine, onClose) {
 	  input: inputStream
 	});
 	rl.on('line', onLine)
-	.on('close', onClose);
+		.on('close', onClose);
 	
 	return rl;
 }
