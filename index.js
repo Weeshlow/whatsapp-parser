@@ -18,6 +18,7 @@ class Whatsapp {
 		this._multiline = false;
 		this._transforms = [];
 		this._timezone = '';
+		this._timestamp = false;
 	}
 
 	/**
