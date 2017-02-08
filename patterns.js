@@ -2,8 +2,9 @@ const authorPattern = /^([^:]+):/;
 
 const Patterns = [
   /^(\d\d\/\d\d\/\d\d, \d\d:\d\d) - ([\s\S]+)/,
-  /^(\d\d\/\d\d\/\d\d\d\d, \d\d?:\d\d? [ap]\.m\.?) - ([\s\S]+)/i,
-  /^(\d\d-\d\d-\d\d \d\d:\d\d:\d\d): ([\s\S]+)/
+  /^(\d\d\/\d\d\/\d\d\d\d, \d\d?:\d\d? [ap]\.m\.?) - ([\s\S]+)/,
+  /^(\d\d-\d\d-\d\d \d\d:\d\d:\d\d): ([\s\S]+)/,
+  /^(\d\d\/\d\d\/\d\d \d\d:\d\d:\d\d): ([\s\S]+)/
 ];
 
 /**

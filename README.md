@@ -1,4 +1,4 @@
-# Parser for whatsapp log files.
+﻿# Parser for whatsapp log files.
 
 ## Where To Use
 Currently the module is useable only in NodeJS environment.
@@ -12,24 +12,24 @@ First require the module and create an instance.
 const Whatsapp = require('whatsapp-parser');
 const whatsapp = new Whatsapp();
 ```
-Then you can use the `whatsapp` instance to parse a file/String/Array.
+Then you can use the `whatsapp` instance to parse a File/String/Array.
 
-### Files
+### File
 ```js
 whatsapp.parseFile('path/to/file.txt');
 ```
 
-### Strings
+### String
 ```js
 whatsapp.parse('27/02/14 05:16:12: Steve Rogers changed the subject to "The Avengers"\n27/02/14 05:16:18: Tony Stark was added');
 ```
 
-### Arrays
+### Array
 ```js
 whatsapp.parse(['27/02/14 05:16:12: Steve Rogers changed the subject to "The Avengers"', '27/02/14 05:16:18: Tony Stark was added']);
 ```
 
-Note `whatsapp.parse` is used for parsing both string and string array inputs.
+Note: `whatsapp.parse` is used for parsing both strings and arrays.
 
 ## Convert text records to Javascript objects.
 
@@ -63,8 +63,9 @@ Log files have a unique pattern depending on the system locale settings.
 ##### Examples:
 ```
 22/01/2016, 2:16 a.m. - Ricardo: hola, estás ahí?
-22-01-16 14:15:49: ‎U hebt de groepsafbeelding gewijzigd
+22-01-16 14:15:49: U hebt de groepsafbeelding gewijzigd
 22/01/16 14:22 - Ron: Hi whats up?
+22/01/16, 14:07 - Ron: hello world
 ```
 
 The module expects a RegExp pattern to use when matching lines of text.
@@ -158,6 +159,7 @@ whatsapp
 	.format('DD/MM/YY, HH:mm', 'MM-DD-YYYY HH:mm:ss')
 	.timestamp()
 	.timezone('Europe/London')
+	.parseFile('path/to/file.txt')
 ```
 
 ### Transforms
@@ -176,3 +178,9 @@ whatsapp
 	
 // sample output: [{t1: 't1', t2: 't2', date: '29/01/17 21:17', author: 'Ron', content: 'foo'}]
 ```
+
+# Todos
+- [ ] Tests
+- [ ] Browser compatiblity
+- [ ] CLI interface
+- [ ] Demo
