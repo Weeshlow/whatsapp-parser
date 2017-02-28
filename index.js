@@ -119,12 +119,14 @@ class Whatsapp {
 	}
 
 	/**
-	* Write records as comma separated values file
+	* Write records to file in comma separated values (CSV) format
 	*
-	* @param records {Array} - Records collection
-	* @param filename {String} - path of output file
-	* @param encoding {String} - encoding to use when writing to file
-	* @return promise {Promise} - resolved when file is written or rejected on error
+	* @param {Object[]} records - Records collection
+	* @param {string} filename - path of output file
+	* @param {Object} [options] - optional values.
+	* @param {string} [options.encoding='utf8'] - encoding to use when writing to file
+	* @param {Object} [options.fields[]=defaultFields] - data fields for output file
+	* @return {Object} promise - A promise which resolves when the file is written or rejected on error
 	*/	
 	toCSV(records, filename, {encoding='utf8', fields=defaultFields} = {}) {
 		var headers = [], outputs = [];
@@ -161,7 +163,9 @@ class Whatsapp {
 		
 		const multiLine = (isMatch, line) => {
 			if (isMatch) {
-				this._addRecord(string, records);
+				if (string.length > 0) {
+					this._addRecord(string, records, _pattern);
+				}
 				string = line;
 			}
 			else {
@@ -170,7 +174,7 @@ class Whatsapp {
 		}
 		const singleLine = (isMatch, line) => {
 			if (isMatch) {
-				this._addRecord(line, records);
+				this._addRecord(line, records, _pattern);
 			}
 		}
 		let parse = _multiline ? multiLine : singleLine;
@@ -188,7 +192,7 @@ class Whatsapp {
 			}
 			var onClose = () => {
 				if (_multiline) {
-					this._addRecord(string, records);
+					this._addRecord(string, records, _pattern);
 				}
 				resolve(records);
 			}
@@ -228,8 +232,8 @@ class Whatsapp {
 	* @param records {Array} - Records collection
 	* @return records {Array}
 	*/
-	_addRecord(text, records) {
-		let record = new Record(text, this._pattern);
+	_addRecord(text, records, pattern) {
+		let record = new Record(text, pattern);
 		records.push(this._transform(record));
 		return records;
 	}
